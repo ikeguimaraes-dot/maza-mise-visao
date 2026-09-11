@@ -122,16 +122,3 @@ export function convertRemoteGroups(remote: RemoteNavGroup[]): NavGroup[] {
     items: g.items.map(convertItem),
   }))
 }
-
-// ── Flatten all leaf hrefs (including children) ─────────────────────────────
-
-export function flattenHrefs(groups: NavGroup[]): { href: string; groupId: string }[] {
-  return groups.flatMap((g) =>
-    g.items.flatMap((it) => {
-      if (it.children) {
-        return it.children.filter((c) => c.href).map((c) => ({ href: c.href!, groupId: g.id }))
-      }
-      return it.href ? [{ href: it.href, groupId: g.id }] : []
-    }),
-  )
-}
