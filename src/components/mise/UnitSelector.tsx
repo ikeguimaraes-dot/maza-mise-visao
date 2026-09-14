@@ -15,12 +15,13 @@ export function UnitSelector({ units, selected }: { units: Unit[]; selected: str
 
   return (
     <select
+      aria-label="Selecionar unidade do MISE"
       value={selected}
       onChange={onChange}
       style={{
         background: "var(--surface-2)",
         border: "1px solid var(--border-soft)",
-        borderRadius: 8,
+        borderRadius: 999,
         padding: "8px 12px",
         color: "var(--text)",
         fontSize: 13,

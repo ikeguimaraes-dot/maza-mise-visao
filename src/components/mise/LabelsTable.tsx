@@ -1,60 +1,36 @@
-import { classifyValidade, formatRemaining, nowIso } from "@/lib/mise/dates";
+"use client";
+
+import { useMemo, useState } from "react";
+import { Search, Tag } from "lucide-react";
+import { classifyValidade, formatRemaining } from "@/lib/mise/dates";
 import type { UpcomingLabel } from "@/lib/mise/labels";
 
-const URGENCY_COLOR: Record<string, string> = {
-  vencida: "#FCA5A5",
-  proxima: "#FCD34D",
-  normal: "var(--text)",
-};
+const STATES = [{ key: "all", label: "Todas" }, { key: "vencida", label: "Vencidas" }, { key: "proxima", label: "Próximas 24h" }, { key: "normal", label: "No prazo" }];
+const LABEL: Record<string, string> = { vencida: "Vencida", proxima: "Atenção", normal: "No prazo" };
+function dateLabel(value: string) { return new Date(value).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" }); }
 
-export function LabelsTable({ rows, total }: { rows: UpcomingLabel[]; total: number }) {
-  const nowMs = new Date(nowIso()).getTime();
-
-  return (
-    <section>
-      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 10 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 700 }}>Etiquetas a vencer</h2>
-        <span style={{ fontSize: 12, color: "var(--text-3)" }}>{total} no total</span>
-      </div>
-
-      {rows.length === 0 ? (
-        <p style={{ color: "var(--text-2)", fontSize: 13 }}>
-          Nenhuma etiqueta registrada — o MISE ainda não entrou em operação.
-        </p>
-      ) : (
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-            <thead>
-              <tr style={{ color: "var(--text-3)", textAlign: "left", fontSize: 11, textTransform: "uppercase" }}>
-                <th style={{ padding: "6px 10px" }}>Produto</th>
-                <th style={{ padding: "6px 10px" }}>Lote</th>
-                <th style={{ padding: "6px 10px" }}>Setor</th>
-                <th style={{ padding: "6px 10px" }}>Conservação</th>
-                <th style={{ padding: "6px 10px" }}>Responsável</th>
-                <th style={{ padding: "6px 10px" }}>Validade</th>
-                <th style={{ padding: "6px 10px" }}>Tempo restante</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => {
-                const urgency = classifyValidade(row.validade, nowMs);
-                const color = URGENCY_COLOR[urgency];
-                return (
-                  <tr key={row.id} style={{ borderTop: "1px solid var(--border-soft)" }}>
-                    <td style={{ padding: "8px 10px", color }}>{row.nome}</td>
-                    <td style={{ padding: "8px 10px", color }}>{row.lote ?? "—"}</td>
-                    <td style={{ padding: "8px 10px", color }}>{row.setor ?? "—"}</td>
-                    <td style={{ padding: "8px 10px", color }}>{row.metodo_conservacao ?? "—"}</td>
-                    <td style={{ padding: "8px 10px", color }}>{row.responsavel_nome ?? "—"}</td>
-                    <td style={{ padding: "8px 10px", color }}>{new Date(row.validade).toLocaleString("pt-BR")}</td>
-                    <td style={{ padding: "8px 10px", color, fontWeight: 600 }}>{formatRemaining(row.validade, nowMs)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </section>
-  );
+export function LabelsTable({ rows, total, referenceTime }: { rows: UpcomingLabel[]; total: number; referenceTime: string }) {
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState("all");
+  const nowMs = new Date(referenceTime).getTime();
+  const visible = useMemo(() => {
+    const normalize = (text: string) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    return rows.filter((row) => (filter === "all" || classifyValidade(row.validade, nowMs) === filter) && normalize([row.nome, row.setor, row.responsavel_nome, row.lote].join(" ")).includes(normalize(query)));
+  }, [rows, filter, query, nowMs]);
+  return <section className="maza-panel mise-labels">
+    <div className="maza-panel-heading"><div><h2>De olho na validade</h2><p>{total.toLocaleString("pt-BR")} etiquetas ativas · prioridade para os próximos vencimentos</p></div><Tag size={19} style={{ color: "var(--text-3)" }} /></div>
+    <div className="mise-table-tools"><div className="mise-filter-group" role="group" aria-label="Filtrar por validade">{STATES.map((state) => <button type="button" key={state.key} aria-pressed={filter === state.key} onClick={() => setFilter(state.key)}>{state.label}</button>)}</div><label className="mise-search"><Search size={15} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar produto, lote ou setor" aria-label="Buscar etiquetas" /></label></div>
+    {total > rows.length && <p className="mise-table-note">A busca e os filtros se aplicam às {rows.length} etiquetas carregadas, ordenadas por validade.</p>}
+    {visible.length === 0 ? <div className="mise-empty"><Tag size={28} /><p>{rows.length ? "Nenhuma etiqueta corresponde a este filtro." : "As etiquetas aparecerão aqui quando houver registros disponíveis."}</p></div> : <>
+      <div className="maza-table-scroll mise-labels-desktop" role="region" aria-label="Etiquetas e prazos" tabIndex={0}><table className="maza-table"><caption className="sr-only">Etiquetas por validade, em horário de Brasília</caption><thead><tr><th>Produto / lote</th><th>Setor / conservação</th><th>Responsável</th><th>Validade</th><th>Situação</th></tr></thead><tbody>{visible.map((row) => {
+        const urgency = classifyValidade(row.validade, nowMs);
+        return <tr key={row.id}><td><strong>{row.nome}</strong><small>Lote {row.lote ?? "não informado"}</small></td><td>{row.setor ?? "—"}<small>{row.metodo_conservacao ?? "—"}</small></td><td>{row.responsavel_nome ?? "—"}</td><td className="mise-nowrap">{dateLabel(row.validade)}</td><td><span className="maza-badge" data-tone={urgency === "vencida" ? "danger" : urgency === "proxima" ? "warning" : "success"}>{LABEL[urgency]}</span><small>{formatRemaining(row.validade, nowMs)}</small></td></tr>;
+      })}</tbody></table></div>
+      <div className="mise-labels-mobile">{visible.map((row) => {
+        const urgency = classifyValidade(row.validade, nowMs);
+        return <details key={row.id}><summary><span><strong>{row.nome}</strong><small>{row.setor ?? "Setor não informado"} · {dateLabel(row.validade)}</small></span><span className="maza-badge" data-tone={urgency === "vencida" ? "danger" : urgency === "proxima" ? "warning" : "success"}>{formatRemaining(row.validade, nowMs)}</span></summary><dl><div><dt>Lote</dt><dd>{row.lote ?? "—"}</dd></div><div><dt>Conservação</dt><dd>{row.metodo_conservacao ?? "—"}</dd></div><div><dt>Responsável</dt><dd>{row.responsavel_nome ?? "—"}</dd></div><div><dt>Situação</dt><dd>{LABEL[urgency]}</dd></div></dl></details>;
+      })}</div>
+    </>}
+    <div className="mise-table-footer" aria-live="polite">{visible.length} de {rows.length} etiquetas carregadas · horário de Brasília</div>
+  </section>;
 }

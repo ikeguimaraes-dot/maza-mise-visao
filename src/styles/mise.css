@@ -1,0 +1,37 @@
+.mise-overview { display: grid; gap: 24px; max-width: 1440px; margin: 0 auto; }
+.mise-overview .maza-page-heading { margin-bottom: 4px; }
+.mise-context { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 15px 0; font-size: 12px; color: var(--text-2); }
+.mise-context > span { display: flex; align-items: center; gap: 8px; }
+.mise-kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.mise-kpi-heading { display: flex; align-items: center; justify-content: space-between; gap: 14px; }.mise-kpi-heading svg { color: var(--text-3); flex-shrink: 0; }
+.mise-kpi { color: var(--text); }
+.mise-kpi .maza-kpi-value { font-size: 42px; margin-top: 7px; }
+.mise-kpi[data-kind="soon"] { background: #ffe1c8; border-color: #f1c6a4; --text: #533823; --text-2: #715239; --text-3: #715239; }
+.mise-kpi[data-kind="labels"] { background: #e7f0cf; border-color: #d5e2b1; --text: #344023; --text-2: #53613f; --text-3: #5e6c4c; }
+.mise-kpi:nth-child(2) { animation-delay: 50ms; }.mise-kpi:nth-child(3) { animation-delay: 100ms; }.mise-kpi:nth-child(4) { animation-delay: 150ms; }
+.mise-labels { overflow: hidden; }.mise-table-tools { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 0 24px 20px; }
+.mise-filter-group { display: flex; gap: 4px; padding: 4px; background: var(--surface-2); border-radius: 999px; }
+.mise-filter-group button { font-size: 11px; font-weight: 500; border: 0; border-radius: 999px; padding: 8px 13px; background: transparent; color: var(--text-3); white-space: nowrap; }
+.mise-filter-group button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm); }
+.mise-search { display: flex; align-items: center; gap: 8px; border: 1px solid var(--border); border-radius: 999px; padding: 9px 13px; color: var(--text-3); }
+.mise-search input { width: 205px; min-width: 0; padding: 0; border: 0; background: transparent; font-size: 11px; color: var(--text); }
+.mise-labels td strong { font-size: 13px; font-weight: 600; }.mise-labels td small { display: block; color: var(--text-3); font-size: 11px; margin-top: 5px; }
+.mise-table-note, .mise-table-footer { font-size: 11px; line-height: 1.6; color: var(--text-3); padding: 14px 24px; border-top: 1px solid var(--border-soft); margin: 0; }
+.mise-table-note { background: var(--surface-2); }.mise-labels-mobile { display: none; }.mise-nowrap { white-space: nowrap; }
+.mise-bottom-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 24px; align-items: start; }
+.mise-empty { display: grid; place-items: center; padding: 30px 24px 40px; gap: 15px; color: var(--text-3); text-align: center; }.mise-empty p { margin: 0; font-size: 13px; line-height: 1.7; max-width: 320px; }.mise-empty > svg { color: var(--brand); }
+.mise-ranking ol { list-style: none; padding: 0 24px 22px; margin: 0; display: grid; gap: 21px; }.mise-rank-heading { display: flex; align-items: center; gap: 10px; font-size: 12px; }.mise-rank-heading > span:nth-child(2) { flex: 1; min-width: 0; }.mise-rank-heading strong { font-weight: 550; }.mise-rank-heading small { display: block; color: var(--text-3); margin-top: 4px; font-size: 10px; }.mise-rank-heading b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.mise-avatar { display: grid; place-items: center; width: 33px; height: 33px; flex-shrink: 0; border-radius: 50%; font-size: 10px; background: var(--brand-secondary-soft); color: var(--text-2); }
+.mise-rank-track { height: 6px; margin: 11px 0 0 43px; background: var(--surface-2); border-radius: 8px; overflow: hidden; }.mise-rank-track > span { display: block; height: 100%; border-radius: inherit; transform-origin: left; animation: mise-bar 600ms ease both; }
+@keyframes mise-bar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.mise-checklist-list { padding: 0 24px 10px; }.mise-checklist-list article { display: flex; align-items: flex-start; gap: 12px; padding: 18px 0; border-top: 1px solid var(--border-soft); }.mise-check-icon { display: grid; place-items: center; flex-shrink: 0; width: 34px; height: 34px; border-radius: 10px; background: var(--surface-2); color: var(--text-2); }.mise-checklist-list h3 { font-size: 13px; font-weight: 550; margin: 0 0 6px; }.mise-checklist-list p { font-size: 11px; color: var(--text-3); margin: 0 0 9px; }.mise-statuses { display: flex; gap: 6px; flex-wrap: wrap; }
+@media (max-width: 1150px) { .mise-table-tools { align-items: stretch; flex-direction: column; }.mise-search input { width: 100%; }.mise-filter-group { align-self: flex-start; } }
+@media (max-width: 1023px) { .mise-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }.mise-bottom-grid { grid-template-columns: 1fr; } }
+@media (max-width: 767px) {
+ .mise-overview { gap: 18px; }.mise-context { font-size: 11px; flex-wrap: wrap; }.mise-context select { max-width: 100%; }
+ .mise-kpi-grid { gap: 10px; }.mise-kpi { padding: 18px 14px; }.mise-kpi .maza-kpi-label { font-size: 11px; }.mise-kpi .maza-kpi-value { font-size: 34px; }.mise-kpi .maza-kpi-sub { font-size: 11px; }.mise-kpi-heading svg { width: 15px; }
+ .mise-table-tools { padding: 0 16px 16px; }.mise-filter-group { max-width: 100%; overflow-x: auto; }.mise-filter-group button { padding: 7px 10px; font-size: 10px; }.mise-search { padding: 0 12px; }.mise-search input { font-size: 16px; }
+ .mise-labels-desktop { display: none; }.mise-labels-mobile { display: block; }.mise-labels-mobile details { border-top: 1px solid var(--border-soft); padding: 0 18px; }.mise-labels-mobile summary { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 18px 0; list-style: none; }.mise-labels-mobile summary::-webkit-details-marker { display: none; }.mise-labels-mobile summary strong { font-size: 13px; font-weight: 600; }.mise-labels-mobile summary small { display: block; margin-top: 6px; color: var(--text-3); font-size: 11px; }.mise-labels-mobile summary > .maza-badge { flex-shrink: 0; font-size: 9px; }.mise-labels-mobile dl { background: var(--surface-2); padding: 12px; border-radius: 10px; margin: 0 0 16px; }.mise-labels-mobile dl div { display: flex; gap: 12px; justify-content: space-between; padding: 6px 0; font-size: 11px; }.mise-labels-mobile dt { color: var(--text-3); }.mise-labels-mobile dd { margin: 0; text-align: right; }
+ .mise-table-footer,.mise-table-note { padding: 14px 18px; }.mise-ranking ol { padding: 0 18px 22px; }.mise-checklist-list { padding: 0 18px 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .mise-rank-track > span { animation: none; } }

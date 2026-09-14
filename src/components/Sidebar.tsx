@@ -1,8 +1,9 @@
 "use client";
 
+import { useMobileNavigation } from "@/components/ui/useMobileNavigation";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState, type CSSProperties, type MouseEvent, type ReactNode } from "react";
-import { ChevronRight } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type ReactNode } from "react";
+import { ChevronRight, X } from "lucide-react";
 import { convertRemoteGroups, type NavGroup, type NavItem, type RemoteNavGroup } from "@/lib/nav/types";
 
 const ZONES = [
@@ -47,7 +48,7 @@ function NavigationLink({
 }) {
   const destination = getNavigationHref(href, pathname, shellUrl);
   return (
-    <a href={destination} style={style} onClick={onClick}>
+    <a href={destination} aria-current={pathname === href ? "page" : undefined} style={style} onClick={onClick}>
       {children}
     </a>
   );
@@ -113,35 +114,25 @@ export function Sidebar(props: { navGroups: RemoteNavGroup[]; shellUrl: string; 
   // Component ("Functions cannot be passed directly to Client Components").
   const navGroups = useMemo(() => convertRemoteGroups(rawNavGroups), [rawNavGroups]);
   const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const sidebarRef = useRef<HTMLElement>(null);
+  const closeMobile = useCallback(() => setMobileOpen(false), []);
+  useMobileNavigation(sidebarRef, mobileOpen, closeMobile);
+  useEffect(() => {
+    const toggle = () => setMobileOpen((open) => !open);
+    window.addEventListener("maza:toggleSidebar", toggle);
+    return () => window.removeEventListener("maza:toggleSidebar", toggle);
+  }, []);
+  useEffect(() => { window.dispatchEvent(new CustomEvent("maza:sidebarState", { detail: mobileOpen })); }, [mobileOpen]);
 
-  return (
-    <aside
-      style={{
-        width: 240,
-        flexShrink: 0,
-        background: "var(--sidebar)",
-        borderRight: "1px solid var(--sidebar-border)",
-        display: "flex",
-        flexDirection: "column",
-        height: "100vh",
-      }}
-    >
-      <div style={{ padding: "20px 16px 16px", borderBottom: "1px solid var(--sidebar-border)" }}>
-        <div style={{ fontSize: 20, fontWeight: 700, color: "var(--text)", letterSpacing: -0.5 }}>Maza</div>
-        <div
-          style={{
-            fontSize: 10,
-            color: "var(--text-3)",
-            marginTop: 2,
-            letterSpacing: 1.2,
-            textTransform: "uppercase",
-            fontWeight: 600,
-          }}
-        >
-          MISE
-        </div>
+  return <>
+    <div className={`shell-backdrop ${mobileOpen ? "open" : ""}`} onClick={closeMobile} />
+    <aside id="maza-sidebar" aria-label="Navegação principal" ref={sidebarRef} className={`shell-sidebar ${mobileOpen ? "open" : ""}`}>
+      <div className="maza-brand">
+        <span className="maza-brand-symbol" aria-hidden="true">m</span>
+        <div><div className="maza-brand-word">maza.</div><div className="maza-brand-caption">Gestão com propósito</div></div>
+        <button type="button" className="maza-icon-button maza-sidebar-close" aria-label="Fechar menu" onClick={closeMobile}><X size={18} /></button>
       </div>
-
       {navOffline && (
         <div
           title="Não foi possível carregar o menu do shell — mostrando apenas as rotas desta zona."
@@ -163,7 +154,7 @@ export function Sidebar(props: { navGroups: RemoteNavGroup[]; shellUrl: string; 
 
       <SidebarNav pathname={pathname} groups={navGroups} shellUrl={shellUrl} navVersao={navVersao} />
     </aside>
-  );
+  </>;
 }
 
 function SidebarNav({
